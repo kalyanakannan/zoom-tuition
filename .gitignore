@@ -1,0 +1,34 @@
+# Python
+*.pyc
+__pycache__/
+db.sqlite3  # Ignore SQLite database
+
+# Virtual Environments
+venv/
+.venv/
+
+# Django Static and Media Files
+staticfiles/
+media/
+
+# React Build Files
+frontend/build/
+
+# Node Modules
+node_modules/
+
+# Logs
+*.log
+
+# Docker
+*.env
+.env
+docker-compose.override.yml
+
+# OS and IDE Specific Files
+.DS_Store
+.vscode/
+.idea/
+
+# Miscellaneous
+*.swp
