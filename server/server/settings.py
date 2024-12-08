@@ -25,7 +25,15 @@ SECRET_KEY = 'django-insecure-$b6d&u5=n4j%#(_(u*3hfgzxbm8%e*i3mdu_g=a)y%tn(371eh
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'localhost:3001',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3001',
+]
 
 AUTH_USER_MODEL = 'meetings.CustomUser'
 
@@ -39,12 +47,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'meetings',
     'channels',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
