@@ -21,7 +21,7 @@ const Header = () => {
   return (
     <header className="bg-gray-800 text-white p-4">
       <nav className="container mx-auto flex justify-between">
-        <Link to="/" className="text-xl font-bold">Zoom Clone</Link>
+        <Link to="/" className="text-xl font-bold">Zoom tuition</Link>
         <div>
           <Link to="/meetings" className="px-4">Meetings</Link>
           {isAuthenticated ? (
