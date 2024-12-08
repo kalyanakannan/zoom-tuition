@@ -1,0 +1,4 @@
+Django==5.1.4
+djangorestframework==3.15.2
+channels==4.2.0
+djangorestframework-simplejwt==5.3.0
