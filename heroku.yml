@@ -5,8 +5,8 @@ build:
 release:
   image: web
   command:
-    - python manage.py collectstatic --noinput
-    - python manage.py migrate
+    - python server/manage.py collectstatic --noinput
+    - python server/manage.py migrate
 
 run:
   web: python server/manage.py runserver 0.0.0.0:8000
