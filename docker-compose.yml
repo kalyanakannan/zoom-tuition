@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: zoom-tuition-backend
+    ports:
+      - "8000:8000" # Expose backend on port 8000
+    environment:
+      - SECRET_KEY=your-secret-key
+      - DEBUG=False
+    volumes:
+      - ./server:/app   # Mount backend directory to container
+      - backend-static:/app/staticfiles # Persistent volume for static files
+    command: >
+      sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - frontend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: zoom-tuition-frontend
+    ports:
+      - "3000:3000" # Expose frontend on port 3000
+    volumes:
+      - ./frontend:/app   # Mount frontend directory to container
+      - frontend-node-modules:/app/node_modules # Persistent volume for node_modules
+    stdin_open: true
+    tty: true
+    command: >
+      sh -c "npm install && npm start"
+
+volumes:
+  backend-static:   # Persistent volume for backend static files
+  frontend-node-modules: # Persistent volume for frontend node_modules
