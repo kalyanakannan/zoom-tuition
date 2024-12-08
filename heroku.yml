@@ -1,10 +1,11 @@
 build:
   docker:
-    web: Dockerfile
+    web: ./Dockerfile
 
 release:
   command:
-    - python server/manage.py migrate
+    - python manage.py collectstatic --noinput
+    - python manage.py migrate
 
 run:
   web: python server/manage.py runserver 0.0.0.0:8000
