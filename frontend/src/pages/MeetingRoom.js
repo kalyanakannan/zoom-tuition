@@ -49,38 +49,44 @@ const MeetingRoom = ({ meetingId }) => {
   }, []);
 
   const fetchUserName = async (id) => {
-    // Fetch the user's name from a backend or session (replace with real logic)
-    const name = "Your Name"; // Example: Replace with actual name
+    const name = "Your Name"; // Fetch from backend
     setUserName(name);
   };
 
   const fetchRemoteUserName = async (id) => {
-    // Fetch the remote user's name from a backend or session (replace with real logic)
-    const name = "Guest Name"; // Example: Replace with actual name
+    const name = "Guest Name"; // Fetch from backend
     setRemoteUserName(name);
   };
 
   const joinMeeting = async (meetingId, peerId) => {
     console.log(`Joining meeting ${meetingId} with peer ID ${peerId}`);
-    // Example: Implement server communication logic here.
+    // Notify server about joining
+  };
+
+  // Centralized logic to initialize or reinitialize the media stream
+  const getOrCreateStream = async (enableVideo = false, enableAudio = false) => {
+    try {
+      
+        // Initialize the stream if not already created
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+          video: enableVideo,
+          audio: enableAudio,
+        });
+        localVideoRef.current.srcObject = localStreamRef.current;
+      return localStreamRef.current;
+    } catch (error) {
+      console.error("Error accessing media devices:", error);
+      throw error;
+    }
   };
 
   const toggleVideo = async () => {
     try {
-      if (!localStreamRef.current) {
-        localStreamRef.current = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: isAudioEnabled, // Maintain the current audio state
-        });
-        localVideoRef.current.srcObject = localStreamRef.current;
-      }
-
-      const videoTrack = localStreamRef.current.getVideoTracks()[0];
+      const stream = await getOrCreateStream(true, isAudioEnabled);
+      const videoTrack = stream.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.enabled = !isVideoEnabled;
         setIsVideoEnabled(!isVideoEnabled);
-      } else {
-        console.error("No video track found in the stream.");
       }
     } catch (error) {
       console.error("Error toggling video:", error);
@@ -89,39 +95,16 @@ const MeetingRoom = ({ meetingId }) => {
 
   const toggleAudio = async () => {
     try {
-      if (!localStreamRef.current) {
-        // Initialize the media stream if it doesn't exist
-        localStreamRef.current = await navigator.mediaDevices.getUserMedia({
-          video: isVideoEnabled, // Maintain the current video state
-          audio: true,
-        });
-        localVideoRef.current.srcObject = localStreamRef.current; // Attach stream to video
-      }
-  
-      // Get the audio track and toggle its enabled property
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      const stream = await getOrCreateStream(isVideoEnabled, true);
+      const audioTrack = stream.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = !isAudioEnabled;
         setIsAudioEnabled(!isAudioEnabled);
-      } else {
-        console.warn("No audio track found. Reinitializing stream.");
-        // Reinitialize the stream with audio
-        localStreamRef.current = await navigator.mediaDevices.getUserMedia({
-          video: isVideoEnabled,
-          audio: true,
-        });
-        const newAudioTrack = localStreamRef.current.getAudioTracks()[0];
-        if (newAudioTrack) {
-          newAudioTrack.enabled = true;
-          setIsAudioEnabled(true);
-          localVideoRef.current.srcObject = localStreamRef.current;
-        }
       }
     } catch (error) {
       console.error("Error toggling audio:", error);
     }
   };
-  
 
   return (
     <div className="flex h-screen bg-gray-900 text-white">

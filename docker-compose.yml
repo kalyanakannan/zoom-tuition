@@ -8,9 +8,6 @@ services:
     container_name: zoom-tuition-backend
     ports:
       - "8000:8000" # Expose backend on port 8000
-    environment:
-      - SECRET_KEY=your-secret-key
-      - DEBUG=False
     volumes:
       - ./server:/app   # Mount backend directory to container
       - backend-static:/app/staticfiles # Persistent volume for static files
