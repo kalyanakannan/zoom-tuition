@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import UserRegistrationSerializer
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django.contrib.auth.models import AnonymousUser
 
 
 class MeetingListCreateView(APIView):
@@ -68,19 +70,20 @@ class ParticipantJoinView(APIView):
 
         peer_id = request.data.get("peer_id")
 
+        print(meeting)
         if not peer_id:
             return Response(
                 {"error": "Peer ID is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        user = request.user
-
-        if not request.user:
-            user = request.data.get("guest_name")
+        user = request.user if not isinstance(request.user, AnonymousUser) else None
 
         # Create or update participant
         participant, created = Participant.objects.get_or_create(
-            meeting=meeting, user=user, defaults={"peer_id": peer_id, "is_active": True}
+            meeting=meeting,
+            user=user,
+            guest_name=request.data.get("guest_name"),
+            defaults={"peer_id": peer_id, "is_active": True},
         )
 
         # Update peer_id if changed
@@ -90,7 +93,7 @@ class ParticipantJoinView(APIView):
 
         other_participants = Participant.objects.filter(
             meeting=meeting, is_active=True
-        ).exclude(user=user)
+        ).exclude(Q(user=user) | Q(guest_name=request.data.get("guest_name")))
 
         return Response(
             {

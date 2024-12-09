@@ -30,12 +30,8 @@ const Header = () => {
     }
 
     try {
-      // Post the details to the backend
-      const response = await joinMeetingAPI(meetingId, { guest_name: guestName });
-      console.log("Successfully joined the meeting:", response.data);
-
       // Navigate to the meeting room after successful join
-      navigate(`/meetings/${meetingId}?guestName=${encodeURIComponent(guestName)}`);
+      navigate(`/meeting/${meetingId}?guestName=${encodeURIComponent(guestName)}`);
       setShowModal(false); // Close the modal after navigating
     } catch (error) {
       console.error("Error joining meeting:", error);

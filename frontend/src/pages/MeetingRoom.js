@@ -3,8 +3,10 @@ import Peer from "peerjs";
 import Video from "../components/Video";
 import Controls from "../components/Controls";
 import Chat from "../components/Chat";
+import { joinMeetingAPI } from "../api/api";
+import { useParams, useLocation } from "react-router-dom";
 
-const MeetingRoom = ({ meetingId }) => {
+const MeetingRoom = ({ meetingsId }) => {
   const [peerId, setPeerId] = useState(null);
   const [participants, setParticipants] = useState([]); 
   const [callActive, setCallActive] = useState(false);
@@ -14,14 +16,27 @@ const MeetingRoom = ({ meetingId }) => {
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
   const participantsRef = useRef(new Set()); // Track unique participants
+  const location = useLocation();
+  const { meetingId } = useParams();
 
   useEffect(() => {
+    
+    const query = new URLSearchParams(location.search);
+    const guestName = query.get("guestName");
     const peer = new Peer();
     peerRef.current = peer;
 
-    peer.on("open", (id) => {
+    peer.on("open", async (id) => {
       setPeerId(id);
       console.log("Peer ID:", id);
+      console.log(meetingId)
+      try {
+        // Post peer ID and guest name to backend
+        await joinMeetingAPI(meetingId, { guest_name: guestName, peer_id: id });
+        console.log("Successfully joined the meeting.");
+      } catch (error) {
+        console.error("Failed to join the meeting:", error);
+      }
       joinMeeting(meetingId, id);
     });
 
