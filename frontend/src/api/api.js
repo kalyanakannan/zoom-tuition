@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000/api",
+  baseURL: "https://zoom-tuition-app-7bcd79679676.herokuapp.com/api" || "http://localhost:8000/api",
 });
 
 
