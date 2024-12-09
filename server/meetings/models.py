@@ -28,7 +28,12 @@ class Participant(models.Model):
     )
     guest_name = models.CharField(max_length=255, null=True, blank=True)
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='participants')
+    peer_id = models.CharField(max_length=200, null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('meeting', 'user')
 
     def __str__(self):
         if self.user:

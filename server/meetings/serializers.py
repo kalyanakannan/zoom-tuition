@@ -13,7 +13,7 @@ class MeetingSerializer(serializers.ModelSerializer):
 class ParticipantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Participant
-        fields = ['id', 'user', 'guest_name', 'meeting', 'joined_at']
+        fields = ['id', 'user', 'guest_name', 'meeting',  'peer_id', 'joined_at', 'is_active']
 
     def validate(self, data):
         # Ensure either 'user' or 'guest_name' is provided
