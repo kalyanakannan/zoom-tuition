@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { joinMeetingAPI } from "../api";
+import { joinMeetingAPI } from "../api/api";
 
 const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
