@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { usePeerConnection } from "../hooks/usePeerConnection ";
 import Controls from "../components/Controls";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams  } from "react-router-dom";
+import { joinMeetingAPI } from "../api/api";
 
 const MeetingRoom = () => {
   const navigate = useNavigate();
+  const { meetingId } = useParams(); 
   const userId = localStorage.getItem("userId");
 
   const {
@@ -18,6 +20,20 @@ const MeetingRoom = () => {
     toggleTrack,
     leaveMeeting,
   } = usePeerConnection(userId);
+
+  useEffect(() => {
+    const joinMeeting = async () => {
+      try {
+        const response = await joinMeetingAPI(meetingId, { userId });
+        console.log("Joined meeting successfully:", response.data);
+      } catch (error) {
+        console.error("Error joining meeting:", error);
+        navigate("/login");
+      }
+    };
+
+    joinMeeting();
+  }, [meetingId, userId, navigate]);
 
   const navigateToEnd = () => {
     navigate("/meeting-end"); // Redirect to meeting end page

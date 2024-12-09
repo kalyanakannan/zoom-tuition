@@ -9,6 +9,10 @@ from .serializers import UserRegistrationSerializer
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -78,18 +82,20 @@ class ParticipantListCreateView(APIView):
 class ParticipantJoinView(APIView):
 
     def post(self, request, meeting_id):
+
         meeting = get_object_or_404(Meeting, id=meeting_id)
-
-        peer_id = request.data.get("peer_id")
-
-        print(meeting)
-        if not peer_id:
-            return Response(
-                {"error": "Peer ID is required"}, status=status.HTTP_400_BAD_REQUEST
-            )
-        print("user da")
-        print(request.user)
+        peer_id = request.data.get("userId")
         user = request.user if not isinstance(request.user, AnonymousUser) else None
+        if not user:
+            user_id = request.data.get("userId")
+            if not user_id:
+                return Response({"error": "User ID is required"}, status=HTTP_400_BAD_REQUEST)
+
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                return Response({"error": "User with provided ID does not exist"}, status=HTTP_400_BAD_REQUEST)
+
 
         # Create or update participant
         participant, created = Participant.objects.get_or_create(
@@ -113,7 +119,7 @@ class ParticipantJoinView(APIView):
             {
                 "message": "Joined successfully",
                 "participants": [
-                    {"user_id": p.user.id, "peer_id": p.peer_id}
+                    {"user_id": p.user.id, "peer_id": p.peer_id, "username": p.user.username}
                     for p in other_participants
                 ],
             },
