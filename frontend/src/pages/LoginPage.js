@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login, setAuthToken } from "../api/api";
+import { login, setAuthToken, getUserProfile } from "../api/api";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -22,9 +22,13 @@ const LoginPage = () => {
         throw new Error("Invalid token received from the server");
       }
 
-      setAuthToken(token); // Set token in Axios headers
-      localStorage.setItem("token", token); // Store token in local storage
-      navigate("/"); // Redirect to home page after login
+      setAuthToken(token);
+      localStorage.setItem("token", token);
+      const profileResponse = await getUserProfile();
+      const userId = profileResponse.data.id;
+      localStorage.setItem("userId", userId);
+
+      navigate("/"); 
     } catch (err) {
       console.error("Login error:", err);
       setError("Invalid username or password");

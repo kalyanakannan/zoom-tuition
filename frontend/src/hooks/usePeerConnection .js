@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Peer from "peerjs";
 
-export const usePeerConnection = () => {
+export const usePeerConnection = (userId) => {
   const [peerId, setPeerId] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
@@ -12,7 +12,13 @@ export const usePeerConnection = () => {
   const localVideoRef = useRef(null);
 
   useEffect(() => {
-    const peer = new Peer();
+    if (!userId) {
+      console.error("User ID is required to initialize PeerJS");
+      return;
+    }
+
+    // Initialize PeerJS with the user ID as the Peer ID
+    const peer = new Peer(userId);
     peerRef.current = peer;
 
     peer.on("open", (id) => {
@@ -56,7 +62,7 @@ export const usePeerConnection = () => {
       peer.destroy();
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
     };
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {

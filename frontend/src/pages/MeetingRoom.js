@@ -4,7 +4,8 @@ import Controls from "../components/Controls";
 import { useNavigate } from "react-router-dom";
 
 const MeetingRoom = () => {
-  const navigate = useNavigate(); // React Router's navigate hook
+  const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
 
   const {
     peerId,
@@ -16,7 +17,7 @@ const MeetingRoom = () => {
     callPeer,
     toggleTrack,
     leaveMeeting,
-  } = usePeerConnection();
+  } = usePeerConnection(userId);
 
   const navigateToEnd = () => {
     navigate("/meeting-end"); // Redirect to meeting end page
@@ -26,9 +27,20 @@ const MeetingRoom = () => {
     <div className="h-screen flex bg-gray-900 text-white">
       {/* Video Section */}
       <div className="flex-1 relative bg-black">
-        <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
+        <video
+          ref={remoteVideoRef}
+          autoPlay
+          playsInline
+          className="w-full h-full object-cover"
+        />
         <div className="absolute bottom-20 right-4 w-32 h-32 bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-          <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+          />
         </div>
 
         {/* Meeting Controls */}
@@ -41,6 +53,10 @@ const MeetingRoom = () => {
 
         {/* Peer ID Input */}
         <div className="absolute top-4 left-4">
+          {/* Peer ID */}
+          <div className="absolute top-4 left-4">
+            <h3>Your Peer ID: {peerId}</h3>
+          </div>
           <div className="flex items-center">
             <input
               type="text"
@@ -50,7 +66,8 @@ const MeetingRoom = () => {
             />
             <button
               onClick={() => {
-                const otherPeerId = document.getElementById("peer-id-input").value;
+                const otherPeerId =
+                  document.getElementById("peer-id-input").value;
                 callPeer(otherPeerId);
               }}
               className="ml-2 p-2 bg-blue-600 rounded hover:bg-blue-700"
@@ -73,7 +90,9 @@ const MeetingRoom = () => {
             placeholder="Type your message"
             className="flex-grow p-2 rounded border border-gray-600 bg-gray-700 text-white"
           />
-          <button className="ml-2 p-2 bg-green-600 rounded hover:bg-green-700">Send</button>
+          <button className="ml-2 p-2 bg-green-600 rounded hover:bg-green-700">
+            Send
+          </button>
         </div>
       </div>
     </div>

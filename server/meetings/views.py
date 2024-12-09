@@ -10,6 +10,18 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
 
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Assuming `request.user` is your authenticated user
+        user = request.user
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+        })
+
 
 class MeetingListCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -34,7 +46,7 @@ class ParticipantListCreateView(APIView):
     def get(self, request, meeting_id):
         try:
             meeting = Meeting.objects.get(id=meeting_id)
-            participants = Participant.objects.filter(meeting=meeting)
+            participants = Participant.objects.filter(meeting=meeting, is_active=True)
             serializer = ParticipantSerializer(participants, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Meeting.DoesNotExist:
@@ -75,13 +87,15 @@ class ParticipantJoinView(APIView):
             return Response(
                 {"error": "Peer ID is required"}, status=status.HTTP_400_BAD_REQUEST
             )
-
+        print("user da")
+        print(request.user)
         user = request.user if not isinstance(request.user, AnonymousUser) else None
 
         # Create or update participant
         participant, created = Participant.objects.get_or_create(
             meeting=meeting,
             user=user,
+            is_active=True,
             guest_name=request.data.get("guest_name"),
             defaults={"peer_id": peer_id, "is_active": True},
         )

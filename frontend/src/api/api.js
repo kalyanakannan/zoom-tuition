@@ -19,6 +19,7 @@ export const setAuthToken = (token) => {
 
 export const login = (data) => API.post("/token/", data);
 export const register = (data) => API.post("/register/", data);
+export const getUserProfile = () => API.get("/profile/me/");
 export const getMeetings = () => API.get("/meetings/");
 export const createMeeting = (data) => API.post("/meetings/", data);
 export const joinMeetingAPI = (meetingId, data) =>
