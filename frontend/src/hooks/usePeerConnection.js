@@ -6,6 +6,9 @@ export const usePeerConnection = (userId) => {
   const [remoteStream, setRemoteStream] = useState(null);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [connections, setConnections] = useState(new Map()); // For data connections
+  const [messages, setMessages] = useState([]); // Track chat messages
+
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -37,6 +40,29 @@ export const usePeerConnection = (userId) => {
 
       call.on("close", () => {
         console.log("Call closed by remote peer");
+      });
+    });
+
+    // Handle incoming data connections
+    peer.on("connection", (conn) => {
+      console.log("Incoming data connection:", conn.peer);
+
+      conn.on("data", (data) => {
+        console.log("Received message:", data);
+        setMessages((prev) => [...prev, { sender: conn.peer, text: data }]);
+      });
+
+      conn.on("open", () => {
+        setConnections((prev) => new Map(prev).set(conn.peer, conn));
+      });
+
+      conn.on("close", () => {
+        setConnections((prev) => {
+          const updated = new Map(prev);
+          updated.delete(conn.peer);
+          return updated;
+        });
+        console.log("Data connection closed with:", conn.peer);
       });
     });
 
@@ -84,6 +110,35 @@ export const usePeerConnection = (userId) => {
     call.on("close", () => {
       console.log("Call closed");
     });
+
+    // Establish a data connection for chat
+    const conn = peerRef.current.connect(otherPeerId);
+
+    conn.on("open", () => {
+      console.log("Data connection established with:", otherPeerId);
+      setConnections((prev) => new Map(prev).set(otherPeerId, conn));
+    });
+
+    conn.on("data", (data) => {
+      console.log("Received message:", data);
+      setMessages((prev) => [...prev, { sender: otherPeerId, text: data }]);
+    });
+
+    conn.on("close", () => {
+      setConnections((prev) => {
+        const updated = new Map(prev);
+        updated.delete(otherPeerId);
+        return updated;
+      });
+      console.log("Data connection closed with:", otherPeerId);
+    });
+  };
+
+  const sendMessage = (message) => {
+    connections.forEach((conn) => {
+      conn.send(message);
+    });
+    setMessages((prev) => [...prev, { sender: "Me", text: message }]);
   };
 
   const toggleTrack = (type) => {
@@ -110,6 +165,8 @@ export const usePeerConnection = (userId) => {
     localVideoRef,
     remoteVideoRef,
     callPeer,
+    sendMessage,
+    messages,
     toggleTrack,
     leaveMeeting,
   };

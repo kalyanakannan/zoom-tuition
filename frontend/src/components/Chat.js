@@ -1,49 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const Chat = ({ peerId, meetingId }) => {
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+const Chat = ({ peerId, messages, sendMessage }) => {
+  const [message, setMessage] = useState("");
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (newMessage.trim()) {
-      setMessages([...messages, { sender: peerId, text: newMessage }]);
-      setNewMessage("");
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      sendMessage(message); // Use the sendMessage function from usePeerConnection
+      setMessage(""); // Clear the input
     }
   };
 
   return (
-    <div className="w-1/3 bg-gray-800 text-white flex flex-col">
-      <h2 className="text-xl font-bold p-4">Chat</h2>
-      <div className="flex-1 overflow-y-auto p-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`mb-2 p-2 rounded ${
-              message.sender === peerId
-                ? "bg-blue-500 text-white text-right"
-                : "bg-gray-700 text-white"
-            }`}
-          >
-            <p>{message.text}</p>
+    <div className="w-1/3 bg-gray-800 p-4 flex flex-col">
+      {/* Peer ID */}
+      <div className="">
+        <h3>Your Peer ID: {peerId}</h3>
+      </div>
+      <h3 className="text-lg font-semibold mb-2">Chat</h3>
+      <div className="flex-1 overflow-y-auto bg-gray-700 rounded p-4 space-y-2">
+        {messages.map((msg, index) => (
+          <div key={index} className="text-white">
+            <strong>{msg.sender}:</strong> {msg.text}
           </div>
         ))}
       </div>
-      <form onSubmit={handleSendMessage} className="flex p-4">
+      <div className="mt-4 flex items-center">
         <input
           type="text"
-          placeholder="Type a message..."
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          className="flex-1 p-2 rounded-l bg-gray-700 text-white"
+          placeholder="Type your message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="flex-grow p-2 rounded border border-gray-600 bg-gray-700 text-white"
         />
         <button
-          type="submit"
-          className="bg-blue-500 px-4 py-2 rounded-r hover:bg-blue-600"
+          onClick={handleSendMessage}
+          className="ml-2 p-2 bg-green-600 rounded hover:bg-green-700"
         >
           Send
         </button>
-      </form>
+      </div>
     </div>
   );
 };
