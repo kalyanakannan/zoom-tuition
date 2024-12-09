@@ -32,12 +32,12 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "localhost:3000",
-    "https://zoom-tuition-app-7bcd79679676.herokuapp.com/"
+    "https://zoom-tuition-app-7bcd79679676.herokuapp.com"
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://zoom-tuition-app-7bcd79679676.herokuapp.com/"
+    "https://zoom-tuition-app-7bcd79679676.herokuapp.com"
 ]
 
 AUTH_USER_MODEL = "meetings.CustomUser"
