@@ -16,5 +16,8 @@ export const setAuthToken = (token) => {
 export const login = (data) => API.post("/token/", data);
 export const getMeetings = () => API.get("/meetings/");
 export const createMeeting = (data) => API.post("/meetings/", data);
+export const joinMeetingAPI = (meetingId, data) =>
+  API.post(`/meetings/${meetingId}/join/`, data);
+
 
 export default API;

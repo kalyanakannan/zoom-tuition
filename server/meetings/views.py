@@ -76,7 +76,7 @@ class ParticipantJoinView(APIView):
         user = request.user
 
         if not request.user:
-            user = peer_id
+            user = request.data.get("guest_name")
 
         # Create or update participant
         participant, created = Participant.objects.get_or_create(
