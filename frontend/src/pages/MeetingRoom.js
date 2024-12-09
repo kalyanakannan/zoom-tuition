@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
-import { usePeerConnection } from "../hooks/usePeerConnection ";
+import { usePeerConnection } from "../hooks/usePeerConnection";
 import Controls from "../components/Controls";
-import { useNavigate, useParams  } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { joinMeetingAPI } from "../api/api";
 
 const MeetingRoom = () => {
   const navigate = useNavigate();
-  const { meetingId } = useParams(); 
+  const { meetingId } = useParams();
   const userId = localStorage.getItem("userId");
 
   const {
@@ -43,6 +43,7 @@ const MeetingRoom = () => {
     <div className="h-screen flex bg-gray-900 text-white">
       {/* Video Section */}
       <div className="flex-1 relative bg-black">
+        
         <video
           ref={remoteVideoRef}
           autoPlay
@@ -69,10 +70,6 @@ const MeetingRoom = () => {
 
         {/* Peer ID Input */}
         <div className="absolute top-4 left-4">
-          {/* Peer ID */}
-          <div className="absolute top-4 left-4">
-            <h3>Your Peer ID: {peerId}</h3>
-          </div>
           <div className="flex items-center">
             <input
               type="text"
@@ -96,6 +93,10 @@ const MeetingRoom = () => {
 
       {/* Chat Section */}
       <div className="w-1/3 bg-gray-800 p-4 flex flex-col">
+      {/* Peer ID */}
+      <div className="">
+          <h3>Your Peer ID: {peerId}</h3>
+        </div>
         <h3 className="text-lg font-semibold mb-2">Chat</h3>
         <div className="flex-1 overflow-y-auto bg-gray-700 rounded p-4 space-y-2">
           {/* Chat messages would go here */}
