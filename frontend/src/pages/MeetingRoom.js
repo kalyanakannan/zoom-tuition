@@ -1,8 +1,11 @@
 import React from "react";
 import { usePeerConnection } from "../hooks/usePeerConnection ";
 import Controls from "../components/Controls";
+import { useNavigate } from "react-router-dom";
 
 const MeetingRoom = () => {
+  const navigate = useNavigate(); // React Router's navigate hook
+
   const {
     peerId,
     remoteStream,
@@ -14,6 +17,10 @@ const MeetingRoom = () => {
     toggleTrack,
     leaveMeeting,
   } = usePeerConnection();
+
+  const navigateToEnd = () => {
+    navigate("/meeting-end"); // Redirect to meeting end page
+  };
 
   return (
     <div className="h-screen flex bg-gray-900 text-white">
@@ -29,7 +36,7 @@ const MeetingRoom = () => {
           isVideoEnabled={isVideoEnabled}
           isAudioEnabled={isAudioEnabled}
           toggleTrack={toggleTrack}
-          leaveMeeting={leaveMeeting}
+          leaveMeeting={navigateToEnd} // Pass navigation function
         />
 
         {/* Peer ID Input */}
