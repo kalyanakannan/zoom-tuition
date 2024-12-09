@@ -23,5 +23,11 @@ export const createMeeting = (data) => API.post("/meetings/", data);
 export const joinMeetingAPI = (meetingId, data) =>
   API.post(`/meetings/${meetingId}/join/`, data);
 
+export const fetchParticipants = (meetingId) =>
+  API.get(`/participants/${meetingId}/`);
+
+
+
+
 
 export default API;

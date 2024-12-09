@@ -1,26 +1,32 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Peer from "peerjs";
 import Video from "../components/Video";
 import Controls from "../components/Controls";
 import Chat from "../components/Chat";
-import { joinMeetingAPI } from "../api/api";
+import { joinMeetingAPI, fetchParticipants } from "../api/api";
 import { useParams, useLocation } from "react-router-dom";
 
-const MeetingRoom = ({ meetingsId }) => {
+const MeetingRoom = () => {
   const [peerId, setPeerId] = useState(null);
-  const [participants, setParticipants] = useState([]); 
-  const [callActive, setCallActive] = useState(false);
+  const [participants, setParticipants] = useState([]);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const localVideoRef = useRef(null);
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
-  const participantsRef = useRef(new Set()); // Track unique participants
+  const participantsRef = useRef(new Set());
   const location = useLocation();
   const { meetingId } = useParams();
 
+  const joinMeeting = useCallback(async (meetingId, peerId) => {
+    try {
+      await getOrCreateStream(true, true);
+    } catch (error) {
+      console.error("Error joining meeting:", error);
+    }
+  }, []);
+
   useEffect(() => {
-    
     const query = new URLSearchParams(location.search);
     const guestName = query.get("guestName");
     const peer = new Peer();
@@ -29,69 +35,81 @@ const MeetingRoom = ({ meetingsId }) => {
     peer.on("open", async (id) => {
       setPeerId(id);
       console.log("Peer ID:", id);
-      console.log(meetingId)
+    
       try {
-        // Post peer ID and guest name to backend
+        // Initialize the stream first
+        await getOrCreateStream(true, true);
+        console.log("Local stream initialized.");
+    
+        // Register the participant
         await joinMeetingAPI(meetingId, { guest_name: guestName, peer_id: id });
         console.log("Successfully joined the meeting.");
+    
+        // Connect to existing participants
+        connectToExistingParticipants();
       } catch (error) {
-        console.error("Failed to join the meeting:", error);
+        console.error("Failed to initialize local stream or connect to participants:", error);
       }
-      joinMeeting(meetingId, id);
     });
+    
 
     peer.on("call", (call) => {
       if (localStreamRef.current) {
         call.answer(localStreamRef.current);
         call.on("stream", (remoteStream) => {
-          // Avoid adding duplicate participants
           if (!participantsRef.current.has(call.peer)) {
-            setParticipants((prev) => [...prev, { 
-              peerId: call.peer, 
-              stream: remoteStream 
-            }]);
+            setParticipants((prev) => [
+              ...prev,
+              { peerId: call.peer, stream: remoteStream },
+            ]);
             participantsRef.current.add(call.peer);
-            setCallActive(true);
           }
         });
       }
     });
 
+    const connectToExistingParticipants = async () => {
+      if (!localStreamRef.current) {
+        console.warn("Local stream not initialized. Skipping connection to participants.");
+        return;
+      }
+    
+      const response = await fetchParticipants(meetingId);
+      const existingParticipants = response.data;
+    
+      existingParticipants.forEach((participant) => {
+        console.log("participant.peer_id exists:", !!participant.peer_id);
+        console.log("peerRef.current exists:", !!peerRef.current);
+        console.log("localStreamRef.current exists:", !!localStreamRef.current);
+    
+        if (participant.peer_id && peerRef.current) {
+          console.log("Connecting to participant.peer_id:", participant.peer_id);
+          const call = peerRef.current.call(participant.peer_id, localStreamRef.current);
+          call.on("stream", (remoteStream) => {
+            if (!participantsRef.current.has(participant.peer_id)) {
+              setParticipants((prev) => [
+                ...prev,
+                { peerId: participant.peer_id, stream: remoteStream },
+              ]);
+              participantsRef.current.add(participant.peer_id);
+            }
+          });
+        } else {
+          console.warn("Skipping participant due to missing dependencies:", participant);
+        }
+      });
+    };
+    
+    
+
+
     return () => {
       peer.destroy();
       if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [meetingId]);
-
-  const joinMeeting = async (meetingId, peerId) => {
-    try {
-      // Get local stream first
-      await getOrCreateStream(true, true);
-
-      // Simulate other participants (in a real app, this would come from a signaling server)
-      // For demonstration, we'll simulate a second participant
-      const otherParticipantId = 'other-participant-id';
-      
-      if (peerRef.current && localStreamRef.current) {
-        const call = peerRef.current.call(otherParticipantId, localStreamRef.current);
-        
-        call.on("stream", (remoteStream) => {
-          if (!participantsRef.current.has(otherParticipantId)) {
-            setParticipants((prev) => [...prev, { 
-              peerId: otherParticipantId, 
-              stream: remoteStream 
-            }]);
-            participantsRef.current.add(otherParticipantId);
-            setCallActive(true);
-          }
-        });
-      }
-    } catch (error) {
-      console.error("Error joining meeting:", error);
-    }
-  };
+  }, [meetingId, location.search, joinMeeting]);
 
   const getOrCreateStream = async (enableVideo = false, enableAudio = false) => {
     try {
@@ -100,11 +118,11 @@ const MeetingRoom = ({ meetingsId }) => {
           video: enableVideo,
           audio: enableAudio,
         });
-        
+
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = localStreamRef.current;
         }
-        
+
         setIsVideoEnabled(enableVideo);
         setIsAudioEnabled(enableAudio);
       }
@@ -115,44 +133,11 @@ const MeetingRoom = ({ meetingsId }) => {
     }
   };
 
-  const toggleVideo = async () => {
-    try {
-      const stream = localStreamRef.current;
-      const videoTrack = stream.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = !isVideoEnabled;
-        setIsVideoEnabled(!isVideoEnabled);
-      }
-    } catch (error) {
-      console.error("Error toggling video:", error);
-    }
-  };
-
-  const toggleAudio = async () => {
-    try {
-      const stream = localStreamRef.current;
-      const audioTrack = stream.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !isAudioEnabled;
-        setIsAudioEnabled(!isAudioEnabled);
-      }
-    } catch (error) {
-      console.error("Error toggling audio:", error);
-    }
-  };
-
   return (
     <div className="flex h-screen bg-gray-900 text-white">
       <div className="flex-1 flex flex-col">
         <div className="flex-1 grid grid-cols-2 gap-4 p-4">
-          {/* Local Video */}
-          <Video
-            streamRef={localVideoRef}
-            isMuted={true}
-            label="You"
-          />
-
-          {/* Remote Participants */}
+          <Video streamRef={localVideoRef} isMuted={true} label="You" />
           {participants.map((participant) => (
             <Video
               key={participant.peerId}
@@ -162,15 +147,13 @@ const MeetingRoom = ({ meetingsId }) => {
             />
           ))}
         </div>
-
         <Controls
           isAudioEnabled={isAudioEnabled}
           isVideoEnabled={isVideoEnabled}
-          toggleAudio={toggleAudio}
-          toggleVideo={toggleVideo}
+          toggleAudio={() => setIsAudioEnabled((prev) => !prev)}
+          toggleVideo={() => setIsVideoEnabled((prev) => !prev)}
         />
       </div>
-
       <Chat peerId={peerId} meetingId={meetingId} />
     </div>
   );
