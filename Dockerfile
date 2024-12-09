@@ -1,5 +1,5 @@
-# Frontend Stage
-FROM node:18-alpine as frontend-build
+# Frontend Build Stage
+FROM node:20-alpine AS frontend-build
 
 # Set working directory
 WORKDIR /app/frontend
@@ -12,8 +12,8 @@ RUN npm install
 COPY frontend/ ./
 RUN npm run build
 
-# Backend Stage
-FROM python:3.10-slim as backend-build
+# Final Stage
+FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app
@@ -25,21 +25,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend source code
 COPY server/ ./server
 
-# Copy the frontend build files to the backend's static directory
-COPY --from=frontend-build /app/frontend/build ./server/staticfiles
+# Copy frontend build files into the backend's static directory
+COPY --from=frontend-build /app/frontend/build ./server/frontend/build
 
-# Collect static files (for Django)
+# Collect static files for Django
 RUN python server/manage.py collectstatic --noinput
-
-# Final Stage
-FROM python:3.10-slim
-
-# Set working directory
-WORKDIR /app
-
-# Copy dependencies from the backend-build stage
-COPY --from=backend-build /usr/local/lib/python3.10 /usr/local/lib/python3.10
-COPY --from=backend-build /app /app
 
 # Expose the default Django port
 EXPOSE 8000
