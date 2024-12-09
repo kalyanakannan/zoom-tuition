@@ -32,10 +32,12 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "localhost:3000",
+    "*.herokuapp.com"
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "*.herokuapp.com"
 ]
 
 AUTH_USER_MODEL = "meetings.CustomUser"
