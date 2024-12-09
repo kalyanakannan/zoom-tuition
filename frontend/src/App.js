@@ -6,6 +6,7 @@ import MeetingPage from "./pages/MeetingPage";
 import LoginPage from "./pages/LoginPage";
 import MeetingRoom from "./pages/MeetingRoom";
 import MeetingEnd from "./pages/MeetingEnd";
+import Register from "./pages/Register";
 
 const App = () => (
   <Router>
@@ -16,6 +17,7 @@ const App = () => (
       <Route path="/login" element={<LoginPage />} />
       <Route path="/meeting/:meetingId" element={<MeetingRoom />} />
       <Route path="/meeting-end" element={<MeetingEnd />} />
+      <Route path="/register" element={<Register />} />
     </Routes>
   </Router>
 );
