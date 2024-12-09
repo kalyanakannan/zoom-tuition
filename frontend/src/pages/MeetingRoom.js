@@ -6,13 +6,14 @@ import Chat from "../components/Chat";
 
 const MeetingRoom = ({ meetingId }) => {
   const [peerId, setPeerId] = useState(null);
-  const [participants, setParticipants] = useState([]); // Store participant data
+  const [participants, setParticipants] = useState([]); 
   const [callActive, setCallActive] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const localVideoRef = useRef(null);
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
+  const participantsRef = useRef(new Set()); // Track unique participants
 
   useEffect(() => {
     const peer = new Peer();
@@ -21,39 +22,77 @@ const MeetingRoom = ({ meetingId }) => {
     peer.on("open", (id) => {
       setPeerId(id);
       console.log("Peer ID:", id);
-
-      // Notify server or signaling mechanism about joining the meeting
       joinMeeting(meetingId, id);
     });
 
     peer.on("call", (call) => {
-      call.answer(localStreamRef.current); // Answer the call with local stream
-      call.on("stream", (remoteStream) => {
-        setParticipants((prev) => [
-          ...prev,
-          { peerId: call.peer, stream: remoteStream },
-        ]);
-        setCallActive(true);
-      });
+      if (localStreamRef.current) {
+        call.answer(localStreamRef.current);
+        call.on("stream", (remoteStream) => {
+          // Avoid adding duplicate participants
+          if (!participantsRef.current.has(call.peer)) {
+            setParticipants((prev) => [...prev, { 
+              peerId: call.peer, 
+              stream: remoteStream 
+            }]);
+            participantsRef.current.add(call.peer);
+            setCallActive(true);
+          }
+        });
+      }
     });
 
-    return () => peer.destroy();
-  }, []);
+    return () => {
+      peer.destroy();
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [meetingId]);
 
   const joinMeeting = async (meetingId, peerId) => {
-    console.log(`Joining meeting ${meetingId} with peer ID ${peerId}`);
-    // Notify server about joining
+    try {
+      // Get local stream first
+      await getOrCreateStream(true, true);
+
+      // Simulate other participants (in a real app, this would come from a signaling server)
+      // For demonstration, we'll simulate a second participant
+      const otherParticipantId = 'other-participant-id';
+      
+      if (peerRef.current && localStreamRef.current) {
+        const call = peerRef.current.call(otherParticipantId, localStreamRef.current);
+        
+        call.on("stream", (remoteStream) => {
+          if (!participantsRef.current.has(otherParticipantId)) {
+            setParticipants((prev) => [...prev, { 
+              peerId: otherParticipantId, 
+              stream: remoteStream 
+            }]);
+            participantsRef.current.add(otherParticipantId);
+            setCallActive(true);
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error joining meeting:", error);
+    }
   };
 
   const getOrCreateStream = async (enableVideo = false, enableAudio = false) => {
     try {
-      localStreamRef.current =
-        localStreamRef.current ||
-        (await navigator.mediaDevices.getUserMedia({
+      if (!localStreamRef.current) {
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({
           video: enableVideo,
           audio: enableAudio,
-        }));
-      localVideoRef.current.srcObject = localStreamRef.current;
+        });
+        
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = localStreamRef.current;
+        }
+        
+        setIsVideoEnabled(enableVideo);
+        setIsAudioEnabled(enableAudio);
+      }
       return localStreamRef.current;
     } catch (error) {
       console.error("Error accessing media devices:", error);
@@ -63,7 +102,7 @@ const MeetingRoom = ({ meetingId }) => {
 
   const toggleVideo = async () => {
     try {
-      const stream = await getOrCreateStream(true, isAudioEnabled);
+      const stream = localStreamRef.current;
       const videoTrack = stream.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.enabled = !isVideoEnabled;
@@ -76,7 +115,7 @@ const MeetingRoom = ({ meetingId }) => {
 
   const toggleAudio = async () => {
     try {
-      const stream = await getOrCreateStream(isVideoEnabled, true);
+      const stream = localStreamRef.current;
       const audioTrack = stream.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = !isAudioEnabled;
@@ -89,13 +128,12 @@ const MeetingRoom = ({ meetingId }) => {
 
   return (
     <div className="flex h-screen bg-gray-900 text-white">
-      {/* Left Side: Video Section */}
       <div className="flex-1 flex flex-col">
         <div className="flex-1 grid grid-cols-2 gap-4 p-4">
           {/* Local Video */}
           <Video
             streamRef={localVideoRef}
-            isMuted={!isAudioEnabled}
+            isMuted={true}
             label="You"
           />
 
@@ -103,14 +141,13 @@ const MeetingRoom = ({ meetingId }) => {
           {participants.map((participant) => (
             <Video
               key={participant.peerId}
-              streamRef={{ current: new MediaStream(participant.stream) }}
+              streamRef={{ current: participant.stream }}
               isMuted={false}
-              label={`User ${participant.peerId}`} // Customize the label as needed
+              label={`User ${participant.peerId}`}
             />
           ))}
         </div>
 
-        {/* Bottom Controls */}
         <Controls
           isAudioEnabled={isAudioEnabled}
           isVideoEnabled={isVideoEnabled}
@@ -119,7 +156,6 @@ const MeetingRoom = ({ meetingId }) => {
         />
       </div>
 
-      {/* Right Side: Chat Section */}
       <Chat peerId={peerId} meetingId={meetingId} />
     </div>
   );
