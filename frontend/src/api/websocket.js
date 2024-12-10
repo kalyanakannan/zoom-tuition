@@ -1,8 +1,10 @@
 // Dynamically determine the WebSocket URL
+const protocol = window.location.protocol === "https:" ? "wss" : "ws";
 const websocketURL =
-  window.location.hostname === "localhost"
-    ? process.env.REACT_APP_WEBSOCKET_URL_LOCAL || "ws://localhost:8000/ws/ai-chat/"
-    : process.env.REACT_APP_WEBSOCKET_URL_PRODUCTION || "wss://your-production-domain/ws/ai-chat/";
+  protocol + "://" +
+  window.location.hostname +
+  (window.location.port ? ":" + window.location.port : "") +
+  "/ws/ai-chat/";
 
 class WebSocketService {
   constructor() {
