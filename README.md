@@ -2,6 +2,13 @@
 
 A modern platform for video calls, virtual meetings, and AI-powered educational mentoring. The Zoom Tuition App is designed to provide seamless collaboration and learning experiences.
 
+## Deployed Application
+
+The app is deployed on Heroku and can be accessed using the following link:
+
+- **Live App**: [https://zoom-tuition-app-7bcd79679676.herokuapp.com/login](https://zoom-tuition-app-7bcd79679676.herokuapp.com/login)
+
+
 ## Key Features
 
 - **Video Calls and Meetings**:
