@@ -1,11 +1,13 @@
 import axios from "axios";
 
-// const API = axios.create({
-//   baseURL: "http://localhost:8000/api",
-// });
+// Dynamically determine the base URL
+const baseURL =
+  window.location.hostname === "localhost"
+    ? process.env.REACT_APP_API_URL_LOCAL || "http://localhost:8000/api"
+    : process.env.REACT_APP_API_URL_PRODUCTION;
 
 const API = axios.create({
-  baseURL: "https://zoom-tuition-app-7bcd79679676.herokuapp.com/api" || "http://localhost:8000/api",
+  baseURL: baseURL,
 });
 
 
