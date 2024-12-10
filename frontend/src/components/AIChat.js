@@ -3,47 +3,37 @@ import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import "katex/dist/katex.min.css"; // Import KaTeX CSS for LaTeX rendering
+import WebSocketService from "../api/websocket";
 
 const AIChat = ({ peerId }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    // Initialize WebSocket connection
-    const ws = new WebSocket("ws://localhost:8000/ws/ai-chat/");
-    setSocket(ws);
+    // Connect to WebSocket
+    WebSocketService.connect();
 
-    ws.onopen = () => {
-      console.log("WebSocket connection established");
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    // Handle incoming messages
+    const handleMessage = (data) => {
       setMessages((prev) => [...prev, { sender: data.sender || "AI", text: data.message }]);
     };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    ws.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
+    WebSocketService.addMessageHandler(handleMessage);
 
     return () => {
-      ws.close();
+      WebSocketService.removeMessageHandler(handleMessage);
+      WebSocketService.close();
     };
   }, []);
 
   const handleSendMessage = () => {
-    if (message.trim() && socket) {
-      // Send message to WebSocket server
-      socket.send(JSON.stringify({ message }));
+    if (message.trim()) {
+      WebSocketService.sendMessage(message);
       setMessages((prev) => [...prev, { sender: "Me", text: message }]);
       setMessage(""); // Clear input
     }
   };
+
 
   return (
     <div className="w-1/3 bg-purple-800 p-4 flex flex-col">

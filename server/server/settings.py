@@ -52,11 +52,12 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "daphne",
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
-    "meetings",
     "channels",
+    "meetings",
 ]
 
 MIDDLEWARE = [
@@ -81,6 +82,7 @@ REST_FRAMEWORK = {
 ROOT_URLCONF = "server.urls"
 
 ASGI_APPLICATION = "server.asgi.application"
+
 
 TEMPLATES = [
     {
