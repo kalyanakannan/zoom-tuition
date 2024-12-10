@@ -1,11 +1,27 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { createMeeting } from "../api/api";
 
 const HomePage = () => {
   const navigate = useNavigate();
 
-  const handleNewMeeting = () => {
-    console.log("Create New Meeting");
+  const handleNewMeeting = async () => {
+    try {
+      // API call to create a new meeting
+      const response = await createMeeting({
+        title: "New Meeting",
+        start_time: new Date().toISOString(),
+        is_active: true,
+      });
+      const meetingId = response.data.id; // Assuming API response contains `id` as the meeting ID
+      console.log("Meeting created successfully:", meetingId);
+
+      // Redirect to the newly created meeting URL
+      navigate(`/meeting/${meetingId}`);
+    } catch (error) {
+      console.error("Error creating meeting:", error);
+      alert("Failed to create a new meeting. Please try again.");
+    }
   };
 
   const handleJoinMeeting = (event) => {
