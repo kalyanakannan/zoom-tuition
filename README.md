@@ -46,11 +46,19 @@ A modern platform for video calls, virtual meetings, and AI-powered educational 
 ### AI Integration
 - OpenAI API for educational support and mentoring
 
-## Getting Started
+### Running the App in Docker
 
-### Prerequisites
-- Node.js (v16 or higher)
-- Python 3.9+
-- Docker (Optional, for containerized deployment)
+You can run the app using Docker Compose for a containerized setup. This will set up both the frontend and backend along with any dependencies.
 
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/your-username/zoom-tuition-app.git
+   cd zoom-tuition-app
 
+2. **Build and Start Containers**: Run the following command to build and start the app:
+    ```bash
+    docker-compose up --build
+
+3. **Access the App**:
+   - **Frontend**: [http://localhost:3000](http://localhost:3000)
+   - **Backend API**: [http://localhost:8000/api](http://localhost:8000/api)
