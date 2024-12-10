@@ -69,3 +69,21 @@ You can run the app using Docker Compose for a containerized setup. This will se
 3. **Access the App**:
    - **Frontend**: [http://localhost:3000](http://localhost:3000)
    - **Backend API**: [http://localhost:8000/api](http://localhost:8000/api)
+
+
+## Screenshots
+
+### 1. Login Page
+![Login Page](images/login.png)
+
+### 2. Home Page
+![Home Page](images/home.png)
+
+### 3. Meeting Room
+![Meeting Room](images/meeting.png)
+
+### 4. AI Chat
+![AI Chat](images/ai-chat.png)
+
+### 4. Meeting End
+![Meeting End](images/meeting-end.png)
