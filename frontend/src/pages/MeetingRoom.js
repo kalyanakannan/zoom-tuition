@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState  } from "react";
 import { usePeerConnection } from "../hooks/usePeerConnection";
 import Controls from "../components/Controls";
 import { useNavigate, useParams } from "react-router-dom";
 import { joinMeetingAPI } from "../api/api";
 import Chat from "../components/Chat";
+import AIChat from "../components/AIChat";
 
 const MeetingRoom = () => {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ const MeetingRoom = () => {
     messages, // Add messages
     sendMessage, // Add sendMessage
   } = usePeerConnection(userId);
+
+  const [selectedOption, setSelectedOption] = useState("chat");
 
   useEffect(() => {
     const joinMeeting = async () => {
@@ -68,6 +71,8 @@ const MeetingRoom = () => {
           isAudioEnabled={isAudioEnabled}
           toggleTrack={toggleTrack}
           leaveMeeting={navigateToEnd} // Pass navigation function
+          onChat={() => setSelectedOption("chat")}
+          onChatWithAI={() => setSelectedOption("aiChat")}
         />
 
         {/* Peer ID Input */}
@@ -93,7 +98,11 @@ const MeetingRoom = () => {
         </div>
       </div>
 
-      <Chat peerId={userId} messages={messages} sendMessage={sendMessage} />
+      {/* Conditional Rendering for Chat or AI Chat */}
+      {selectedOption === "chat" && (
+        <Chat peerId={userId} messages={messages} sendMessage={sendMessage} />
+      )}
+      {selectedOption === "aiChat" && <AIChat peerId={userId} />}
     </div>
   );
 };
